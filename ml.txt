@@ -1,0 +1,615 @@
+#polynomial regression
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+
+
+x = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]).reshape(-1, 1)
+y = np.array([3, 6, 10, 18, 33, 50, 70, 100, 130])
+
+
+degree = 3
+
+
+poly = PolynomialFeatures(degree=degree)
+x_poly = poly.fit_transform(x)
+
+
+model = LinearRegression()
+model.fit(x_poly, y)
+
+
+x_range = np.linspace(min(x), max(x), 100).reshape(-1, 1)
+x_range_poly = poly.transform(x_range)
+y_pred = model.predict(x_range_poly)
+
+
+plt.scatter(x, y, color='blue', label='Original Data')
+plt.plot(x_range, y_pred, color='red', label=f'Polynomial Regression (degree={degree})')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.title('Polynomial Regression')
+plt.grid(True)
+plt.show()
+
+
+
+#logistic regression
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# 1. Generate synthetic binary classification data
+X, y = make_classification(n_samples=100,     # total samples
+                           n_features=1,      # only one feature (for easy plotting)
+                           n_informative=1,   # only one informative feature
+                           n_redundant=0,     # no redundant features
+                           n_clusters_per_class=1,
+                           random_state=42)
+
+# 2. Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+
+# 3. Create and train the logistic regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# 4. Make predictions
+y_pred = model.predict(X_test)
+
+# 5. Evaluate the model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+# 6. Plot the sigmoid curve (probability predictions)
+x_vals = np.linspace(X.min(), X.max(), 300).reshape(-1, 1)
+y_probs = model.predict_proba(x_vals)[:, 1]  # probability of class 1
+
+plt.figure(figsize=(8, 5))
+plt.scatter(X, y, color='blue', label='Actual Data')
+plt.plot(x_vals, y_probs, color='red', label='Logistic Regression Curve')
+plt.xlabel("Feature Value")
+plt.ylabel("Probability")
+plt.title("Logistic Regression - Sigmoid Curve")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+
+#binary classifieer
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# Input data (Feature) and labels (0 or 1)
+X = np.array([[1], [2], [3], [4], [5], [6], [7], [8]])
+y = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+
+# Train logistic regression model
+model = LogisticRegression()
+model.fit(X, y)
+
+# Predict for new values
+X_test = np.array([[3], [6], [9]])
+predictions = model.predict(X_test)
+print("Predictions for", X_test.flatten(), ":", predictions)
+
+# Evaluate the model using the training data
+train_predictions = model.predict(X)
+accuracy = accuracy_score(y, train_predictions)
+print(f"Accuracy on training data: {accuracy:.2f}")
+
+# Print classification report
+print("\nClassification Report:")
+print(classification_report(y, train_predictions))
+
+# Print confusion matrix
+conf_matrix = confusion_matrix(y, train_predictions)
+print("\nConfusion Matrix:")
+print(conf_matrix)
+
+# Plot
+x_range = np.linspace(0, 10, 100).reshape(-1, 1)
+y_prob = model.predict_proba(x_range)[:, 1]
+
+plt.scatter(X, y, color='blue', label='Training Data')
+plt.plot(x_range, y_prob, color='red', label='Logistic Curve')
+plt.axhline(0.5, color='gray', linestyle='--', label='Threshold = 0.5')
+plt.xlabel('Input Feature')
+plt.ylabel('Probability of Class 1')
+plt.title('Simple Binary Classifier')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+
+#multiclass classifier
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.linear_model import LogisticRegression
+
+# Load Iris dataset
+iris = load_iris()
+X = iris.data[:, :2]  # Only first 2 features for 2D plot
+y = iris.target       # Target labels: 0, 1, 2
+
+# Train logistic regression model
+model = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=200)
+model.fit(X, y)
+
+# Plot decision boundaries
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.linspace(x_min, x_max, 200),
+                     np.linspace(y_min, y_max, 200))
+Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+
+plt.contourf(xx, yy, Z, alpha=0.3, cmap='Set1')
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap='Set1', edgecolor='k')
+plt.xlabel(iris.feature_names[0])
+plt.ylabel(iris.feature_names[1])
+plt.title("Simple Multiclass Classification (Iris Dataset)")
+plt.grid(True)
+plt.show()
+
+
+
+
+
+#svm
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.svm import SVC
+from sklearn.datasets import make_blobs
+
+# Create a simple 2D dataset with two classes
+X, y = make_blobs(n_samples=100, centers=2, random_state=6)
+
+# Train a linear SVM
+model = SVC(kernel='linear', C=1E10)  # High C = hard margin
+model.fit(X, y)
+
+# Get the separating hyperplane
+w = model.coef_[0]      # Weight vector
+b = model.intercept_[0] # Bias
+slope = -w[0] / w[1]
+intercept = -b / w[1]
+
+# Plot data points and decision boundary
+plt.figure(figsize=(8, 6))
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm, s=50, edgecolors='k')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.title('SVM - Hyperplane and Margins')
+
+# Create x values for the decision boundary and margins
+x_vals = np.linspace(X[:, 0].min()-1, X[:, 0].max()+1, 100)
+decision_boundary = slope * x_vals + intercept
+margin = 1 / np.linalg.norm(w)
+
+# Margins
+margin_up = decision_boundary + np.sqrt(1 + slope**2) * margin
+margin_down = decision_boundary - np.sqrt(1 + slope**2) * margin
+
+# Plot hyperplane
+plt.plot(x_vals, decision_boundary, 'k-', label='Hyperplane')
+plt.plot(x_vals, margin_up, 'k--', label='Margin')
+plt.plot(x_vals, margin_down, 'k--')
+
+# Plot support vectors
+plt.scatter(model.support_vectors_[:, 0],
+            model.support_vectors_[:, 1],
+            s=150, facecolors='none', edgecolors='k', linewidths=1.5, label='Support Vectors')
+
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+#decision tree
+
+import numpy as np
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score, classification_report
+import matplotlib.pyplot as plt
+
+def main():
+    # Load the Iris dataset
+    iris = datasets.load_iris()
+    X = iris.data
+    y = iris.target
+    feature_names = iris.feature_names
+    target_names = iris.target_names
+
+    # Split data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Create and train the Decision Tree model
+    dt_model = DecisionTreeClassifier(max_depth=3, random_state=42)
+    dt_model.fit(X_train, y_train)
+
+    # Make predictions
+    y_pred = dt_model.predict(X_test)
+
+    # Evaluate the model
+    accuracy = accuracy_score(y_test, y_pred)
+    report = classification_report(y_test, y_pred, target_names=target_names)
+
+    # Print results
+    print(f"Accuracy: {accuracy:.2f}")
+    print("Classification Report:\n", report)
+
+    # Visualize the Decision Tree
+    plt.figure(figsize=(12, 8))
+    plot_tree(dt_model, feature_names=feature_names, class_names=target_names,
+              filled=True, rounded=True, fontsize=10)
+    plt.title("Decision Tree on Iris Dataset")
+    plt.show()
+
+if __name__ == "__main__":
+    main()
+
+
+
+#linear regression
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+def main():
+    # Load Iris dataset
+    iris = datasets.load_iris()
+    X = iris.data[:, [0]]  # Sepal length (feature)
+    y = iris.data[:, 2]    # Petal length (target)
+
+    # Reshape target to be 2D
+    y = y.reshape(-1, 1)
+
+    # Split into train/test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Train Linear Regression model
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+
+    # Predict
+    y_pred = model.predict(X_test)
+
+    # Evaluate
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    print(f"Mean Squared Error: {mse:.2f}")
+    print(f"R² Score: {r2:.2f}")
+    print(f"Intercept: {model.intercept_[0]:.2f}, Slope: {model.coef_[0][0]:.2f}")
+
+    # Plot
+    plt.scatter(X_test, y_test, color='blue', label='Actual')
+    plt.plot(X_test, y_pred, color='red', linewidth=2, label='Regression Line')
+    plt.title("Linear Regression on Iris Dataset")
+    plt.xlabel("Sepal Length (cm)")
+    plt.ylabel("Petal Length (cm)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+if __name__ == "__main__":
+    main()
+
+
+
+#backpropagation
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import numpy as np
+
+# Activation functions and their derivatives
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Load Iris dataset
+iris = load_iris()
+X = iris.data  # 150 samples, 4 features
+y = iris.target.reshape(-1, 1)  # 150 labels
+
+# One-hot encode the target labels
+encoder = OneHotEncoder(sparse_output=False)  # Use sparse_output=False instead of sparse=False
+y = encoder.fit_transform(y)  # 150 samples, 3 classes
+
+# Standardize features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Split data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Initialize parameters
+input_size = X_train.shape[1]  # 4 features
+hidden_size = 6
+output_size = y_train.shape[1]  # 3 classes
+learning_rate = 0.1
+epochs = 10000
+
+# Initialize weights and biases
+np.random.seed(42)
+W1 = np.random.randn(input_size, hidden_size)
+b1 = np.zeros((1, hidden_size))
+
+W2 = np.random.randn(hidden_size, output_size)
+b2 = np.zeros((1, output_size))
+
+# Training the network with Backpropagation
+for epoch in range(epochs):
+    # Forward pass
+    z1 = np.dot(X_train, W1) + b1
+    a1 = sigmoid(z1)
+
+    z2 = np.dot(a1, W2) + b2
+    a2 = sigmoid(z2)
+
+    # Compute the loss (Mean Squared Error)
+    error = y_train - a2
+    loss = np.mean(np.square(error))
+
+    # Backpropagation
+    d_output = error * sigmoid_derivative(a2)
+    d_hidden = np.dot(d_output, W2.T) * sigmoid_derivative(a1)
+
+    # Update weights and biases
+    W2 += np.dot(a1.T, d_output) * learning_rate
+    b2 += np.sum(d_output, axis=0, keepdims=True) * learning_rate
+
+    W1 += np.dot(X_train.T, d_hidden) * learning_rate
+    b1 += np.sum(d_hidden, axis=0, keepdims=True) * learning_rate
+
+    # Print loss every 1000 epochs
+    if epoch % 1000 == 0:
+        print(f"Epoch {epoch} | Loss: {loss:.4f}")
+
+# ---- Test the model ----
+# Forward pass on test data
+z1 = np.dot(X_test, W1) + b1
+a1 = sigmoid(z1)
+
+z2 = np.dot(a1, W2) + b2
+a2 = sigmoid(z2)
+
+# Predictions
+y_pred = np.argmax(a2, axis=1)
+y_true = np.argmax(y_test, axis=1)
+
+# Accuracy
+accuracy = accuracy_score(y_true, y_pred)
+print(f"\nTest Accuracy: {accuracy * 100:.2f}%")
+
+# Confusion Matrix
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_true, y_pred))
+
+# Classification Report
+print("\nClassification Report:")
+print(classification_report(y_true, y_pred))
+
+
+
+#backpropagation using xor
+
+import numpy as np
+
+# Activation function and its derivative
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# XOR dataset
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])  # Input
+y = np.array([[0], [1], [1], [0]])  # XOR output
+
+# Initialize network parameters
+input_size = 2    # 2 inputs (XOR)
+hidden_size = 2   # Hidden layer neurons (arbitrary)
+output_size = 1   # 1 output (binary output)
+learning_rate = 0.1
+epochs = 10000
+
+# Initialize weights and biases
+np.random.seed(42)
+W1 = np.random.randn(input_size, hidden_size)
+b1 = np.zeros((1, hidden_size))
+
+W2 = np.random.randn(hidden_size, output_size)
+b2 = np.zeros((1, output_size))
+
+# Training using backpropagation
+for epoch in range(epochs):
+    # Forward pass
+    z1 = np.dot(X, W1) + b1
+    a1 = sigmoid(z1)
+
+    z2 = np.dot(a1, W2) + b2
+    a2 = sigmoid(z2)
+
+    # Compute the error (loss)
+    error = y - a2
+    loss = np.mean(np.square(error))  # MSE loss
+
+    # Backpropagation
+    d_output = error * sigmoid_derivative(a2)
+    d_hidden = np.dot(d_output, W2.T) * sigmoid_derivative(a1)
+
+    # Update weights and biases
+    W2 += np.dot(a1.T, d_output) * learning_rate
+    b2 += np.sum(d_output, axis=0, keepdims=True) * learning_rate
+
+    W1 += np.dot(X.T, d_hidden) * learning_rate
+    b1 += np.sum(d_hidden, axis=0, keepdims=True) * learning_rate
+
+    # Print loss every 1000 epochs
+    if epoch % 1000 == 0:
+        print(f"Epoch {epoch} | Loss: {loss:.4f}")
+
+# Predictions
+predictions = np.round(a2)  # Round the output to 0 or 1
+print("\nPredictions after training:")
+print(predictions)
+
+# Check final output
+print("\nFinal output:")
+print(np.round(a2))  # Rounded output after training
+
+
+
+
+
+#backpropagation for and
+
+import numpy as np
+
+# Activation function and its derivative
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# AND dataset
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])  # Input
+y = np.array([[0], [0], [0], [1]])  # AND output
+
+# Initialize network parameters
+input_size = 2    # 2 inputs (AND)
+hidden_size = 2   # Hidden layer neurons (arbitrary)
+output_size = 1   # 1 output (binary output)
+learning_rate = 0.1
+epochs = 10000
+
+# Initialize weights and biases
+np.random.seed(42)
+W1 = np.random.randn(input_size, hidden_size)
+b1 = np.zeros((1, hidden_size))
+
+W2 = np.random.randn(hidden_size, output_size)
+b2 = np.zeros((1, output_size))
+
+# Training using backpropagation
+for epoch in range(epochs):
+    # Forward pass
+    z1 = np.dot(X, W1) + b1
+    a1 = sigmoid(z1)
+
+    z2 = np.dot(a1, W2) + b2
+    a2 = sigmoid(z2)
+
+    # Compute the error (loss)
+    error = y - a2
+    loss = np.mean(np.square(error))  # MSE loss
+
+    # Backpropagation
+    d_output = error * sigmoid_derivative(a2)
+    d_hidden = np.dot(d_output, W2.T) * sigmoid_derivative(a1)
+
+    # Update weights and biases
+    W2 += np.dot(a1.T, d_output) * learning_rate
+    b2 += np.sum(d_output, axis=0, keepdims=True) * learning_rate
+
+    W1 += np.dot(X.T, d_hidden) * learning_rate
+    b1 += np.sum(d_hidden, axis=0, keepdims=True) * learning_rate
+
+    # Print loss every 1000 epochs
+    if epoch % 1000 == 0:
+        print(f"Epoch {epoch} | Loss: {loss:.4f}")
+
+# Predictions
+predictions = np.round(a2)  # Round the output to 0 or 1
+print("\nPredictions after training:")
+print(predictions)
+
+# Check final output
+print("\nFinal output:")
+print(np.round(a2))  # Rounded output after training
+
+
+
+
+#pga and tsne
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import StandardScaler
+
+# Load the Iris dataset
+iris = datasets.load_iris()
+X = iris.data  # Feature data (4 features for each sample)
+y = iris.target  # True labels (just for evaluation, not used in dimensionality reduction)
+target_names = iris.target_names
+
+# Standardizing the data (important for PCA and t-SNE)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Step 1: PCA (Reduce to 2 components for visualization)
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+# Step 2: t-SNE (Further reduce the dimensionality for better visualization)
+tsne = TSNE(n_components=2, random_state=42)
+X_tsne = tsne.fit_transform(X_scaled)
+
+# Plotting PCA result
+plt.figure(figsize=(12, 6))
+
+# Subplot 1: PCA
+plt.subplot(1, 2, 1)
+plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap='viridis')
+plt.title('PCA (2D Projection)')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.colorbar(label='Target classes')
+
+# Subplot 2: t-SNE
+plt.subplot(1, 2, 2)
+plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=y, cmap='viridis')
+plt.title('t-SNE (2D Projection)')
+plt.xlabel('t-SNE Component 1')
+plt.ylabel('t-SNE Component 2')
+plt.colorbar(label='Target classes')
+
+plt.tight_layout()
+plt.show()
+
+
